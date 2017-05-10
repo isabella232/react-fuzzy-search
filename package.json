@@ -1,11 +1,15 @@
 {
-  "name": "react-fuzzy",
-  "version": "0.3.3",
+  "name": "@storybook/react-fuzzy",
+  "version": "0.4.0",
   "description": "React Fuzzy Component",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ritz078/react-fuzzy-search"
+    "url": "https://github.com/storybooks/react-fuzzy-search"
   },
+  "bugs": {
+    "url": "https://github.com/storybooks/react-fuzzy-search/issues"
+  },
+  "homepage": "https://github.com/storybooks/react-fuzzy-search",
   "license": "MIT",
   "scripts": {
     "prepublish": ". ./.scripts/prepublish.sh",

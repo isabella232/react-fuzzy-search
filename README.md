@@ -4,7 +4,7 @@ fuzzy search in React
 ##Installation
 
 ```shell
-npm install --save react-fuzzy
+npm install --save @storybook/react-fuzzy
 ```
 
 ##Basic Usage
@@ -56,4 +56,3 @@ verbose|false|Will print to the console. Useful for debugging.
 
 ##License
 MIT @ Ritesh Kumar
-

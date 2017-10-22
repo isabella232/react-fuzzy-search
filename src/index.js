@@ -29,6 +29,7 @@ const styles = {
     borderTop: '1px solid #eee',
     color: '#666',
     fontSize: 14,
+    cursor: 'pointer',
   },
   selectedResultStyle: {
     backgroundColor: '#f9f9f9',
@@ -37,6 +38,7 @@ const styles = {
     borderTop: '1px solid #eee',
     color: '#666',
     fontSize: 14,
+    cursor: 'pointer',
   },
   resultsWrapperStyle: {
     width: '100%',
@@ -50,21 +52,70 @@ const styles = {
   },
 };
 
-const defaultResultsTemplate = (props, state, styl) =>
-  state.results.map((val, i) => {
+function defaultResultsTemplate(props, state, styl, clickHandler) {
+  return state.results.map((val, i) => {
     const style = state.selectedIndex === i ? styl.selectedResultStyle : styl.resultsStyle;
-    return <div key={i} style={style}>{val.title}</div>;
+    return (
+      <div key={i} style={style} onClick={() => clickHandler(i)}>
+        {val.title}
+      </div>
+    );
   });
+}
 
-class FuzzySearch extends Component {
+export default class FuzzySearch extends Component {
+  static propTypes = {
+    caseSensitive: PropTypes.bool,
+    className: PropTypes.string,
+    distance: PropTypes.number,
+    id: PropTypes.string,
+    include: PropTypes.array,
+    maxPatternLength: PropTypes.number,
+    onSelect: PropTypes.func.isRequired,
+    width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    keys: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
+    list: PropTypes.array.isRequired,
+    location: PropTypes.number,
+    placeholder: PropTypes.string,
+    resultsTemplate: PropTypes.func,
+    shouldSort: PropTypes.bool,
+    sortFn: PropTypes.func,
+    threshold: PropTypes.number,
+    tokenize: PropTypes.bool,
+    verbose: PropTypes.bool,
+    autoFocus: PropTypes.bool,
+    maxResults: PropTypes.number,
+  };
+
+  static defaultProps = {
+    caseSensitive: false,
+    distance: 100,
+    include: [],
+    location: 0,
+    width: 430,
+    placeholder: 'Search',
+    resultsTemplate: defaultResultsTemplate,
+    shouldSort: true,
+    sortFn(a, b) {
+      return a.score - b.score;
+    },
+    threshold: 0.6,
+    tokenize: false,
+    verbose: false,
+    autoFocus: false,
+    maxResults: 10,
+  };
+
   constructor(props) {
     super(props);
     this.state = {
       results: [],
       selectedIndex: 0,
+      selectedValue: {},
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleMouseClick = this.handleMouseClick.bind(this);
     this.fuse = new Fuse(props.list, this.getOptions());
   }
 
@@ -128,12 +179,27 @@ class FuzzySearch extends Component {
     } else if (e.keyCode === 13) {
       if (results[selectedIndex]) {
         this.props.onSelect(results[this.state.selectedIndex]);
+        this.setState({
+          selectedValue: results[this.state.selectedIndex],
+        });
       }
       this.setState({
         results: [],
         selectedIndex: 0,
       });
     }
+  }
+
+  handleMouseClick(clickedIndex) {
+    const { results } = this.state;
+
+    if (results[clickedIndex]) {
+      this.props.onSelect(results[clickedIndex]);
+    }
+    this.setState({
+      results: [],
+      selectedIndex: 0,
+    });
   }
 
   render() {
@@ -151,58 +217,15 @@ class FuzzySearch extends Component {
             ref="searchBox"
             placeholder={placeholder}
             autoFocus={autoFocus}
+            value={this.state.selectedValue && this.state.selectedValue.title}
           />
         </div>
         {this.state.results &&
           this.state.results.length > 0 &&
           <div style={styles.resultsWrapperStyle}>
-            {resultsTemplate(this.props, this.state, styles)}
+            {resultsTemplate(this.props, this.state, styles, this.handleMouseClick)}
           </div>}
       </div>
     );
   }
 }
-
-FuzzySearch.propTypes = {
-  caseSensitive: PropTypes.bool,
-  className: PropTypes.string,
-  distance: PropTypes.number,
-  id: PropTypes.string,
-  include: PropTypes.array,
-  maxPatternLength: PropTypes.number,
-  onSelect: PropTypes.func.isRequired,
-  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  keys: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
-  list: PropTypes.array.isRequired,
-  location: PropTypes.number,
-  placeholder: PropTypes.string,
-  resultsTemplate: PropTypes.func,
-  shouldSort: PropTypes.bool,
-  sortFn: PropTypes.func,
-  threshold: PropTypes.number,
-  tokenize: PropTypes.bool,
-  verbose: PropTypes.bool,
-  autoFocus: PropTypes.bool,
-  maxResults: PropTypes.number,
-};
-
-FuzzySearch.defaultProps = {
-  caseSensitive: false,
-  distance: 100,
-  include: [],
-  location: 0,
-  width: 430,
-  placeholder: 'Search',
-  resultsTemplate: defaultResultsTemplate,
-  shouldSort: true,
-  sortFn(a, b) {
-    return a.score - b.score;
-  },
-  threshold: 0.6,
-  tokenize: false,
-  verbose: false,
-  autoFocus: false,
-  maxResults: 10,
-};
-
-export default FuzzySearch;
